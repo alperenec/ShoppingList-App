@@ -1,8 +1,19 @@
 const shoppingList = document.querySelector(".shopping-list");
 const shoppingForm = document.querySelector(".shopping-form");
+const filterButtons = document.querySelectorAll(".filter-buttons button");
 
-loadItems();
-shoppingForm.addEventListener("submit",handleFormSubmit);
+
+document.addEventListener("DOMContentLoaded",function(){
+    loadItems();
+
+    shoppingForm.addEventListener("submit",handleFormSubmit);
+    
+    for(let button of filterButtons){
+        button.addEventListener("click",handleFilterSelection);
+    }
+});
+
+
 
 function loadItems(){
     const items= [
@@ -28,6 +39,7 @@ function addItem(input){
     });
     shoppingList.prepend(newItem);
     input.value="";
+    updateFilteredItems()
 }
 
 function generateId(){
@@ -47,6 +59,7 @@ function handleFormSubmit(e){
 function toggleCompleted(e){
     const li = e.target.parentElement;
     li.toggleAttribute("item-completed",e.target.checked)
+    updateFilteredItems()
 }
 
 // <li class="border rounded p-3 mb-1">
@@ -66,6 +79,10 @@ function createListItem(item){
     const div=document.createElement("div");
     div.textContent = item.name;
     div.classList.add("item-name");
+    div.addEventListener("click",openEditMode);
+    div.addEventListener("blue",closeEditMode);
+    div.addEventListener("keydown",cancelEnter);
+
 
     //delete icon
     const deleteIcon = document.createElement("i");
@@ -88,4 +105,56 @@ function createListItem(item){
 function removeItem(e){
     const li=e.target.parentElement;
     shoppingList.removeChild(li);
+}
+
+function openEditMode(e){
+    const li=e.target.parentElement;
+    if(li.hasAttribute("item-completed")==false){
+        e.target.contentEditable=true;
+    }
+}
+
+function closeEditMode(e){
+    e.target.contentEditable=false;
+}
+
+function cancelEnter(e){
+    if(e.key=="Enter"){
+        e.preventDefault();
+        closeEditMode(e);
+    }
+}
+
+function handleFilterSelection(e){
+    const filterBtn = e.target;
+    for(let button of filterButtons){
+        button.classList.add("btn-secondary");
+        button.classList.remove("btn-primary");
+    }
+    filterBtn.classList.add("btn-primary");
+    filterBtn.classList.remove("btn-secondary");
+
+    filterItems(filterBtn.getAttribute("item-filter"));
+
+}
+
+function filterItems(filterType){
+    const li_items=shoppingList.querySelectorAll("li");
+    for(let li of li_items){
+        li.classList.remove("d-flex");
+        li.classList.remove("d-none");
+
+        const item_completed = li.hasAttribute("item-completed");
+        if(filterType=="completed"){
+            li.classList.toggle(item_completed?"d-flex":"d-none");
+        }else if(filterType=="incompleted"){
+            li.classList.toggle(item_completed?"d-none":"d-flex");
+        }else{
+            li.classList.toggle("d-flex");
+        }
+    }
+}
+function updateFilteredItems(){
+    const activeFilter=document.querySelector(".btn-primary[item-filter]");
+    filterItems(activeFilter.getAttribute("item-filter"));
 }
