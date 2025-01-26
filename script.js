@@ -13,15 +13,23 @@ document.addEventListener("DOMContentLoaded",function(){
     }
 });
 
+function saveToLS(){
+    const listItems=shoppingList.querySelectorAll("li");
+    const liste= [];
+    for(let li of listItems){
+        const id=li.getAttribute("item-id");
+        const name=li.querySelector(".item-name").textContent;
+        const completed=li.hasAttribute("item-completed");
+        
+        liste.push({id,name,completed});
+    }
+    localStorage.setItem("shoppingItems", JSON.stringify(liste));
+}
 
 
 function loadItems(){
-    const items= [
-        {id:1, name:"Yumurta", completed:false},
-        {id:2, name:"Ekmek", completed:true},
-        {id:3, name:"Süt", completed:false},
-        {id:4, name:"Bal", completed:false}
-    ];
+    const items =JSON.parse(localStorage.getItem("shoppingItems")) || [];
+    shoppingList.innerHTML="";
 
     shoppingList.innerHTML="";
     for(let item of items){
@@ -40,6 +48,7 @@ function addItem(input){
     shoppingList.prepend(newItem);
     input.value="";
     updateFilteredItems()
+    saveToLS()
 }
 
 function generateId(){
@@ -60,6 +69,7 @@ function toggleCompleted(e){
     const li = e.target.parentElement;
     li.toggleAttribute("item-completed",e.target.checked)
     updateFilteredItems()
+    saveToLS()
 }
 
 // <li class="border rounded p-3 mb-1">
@@ -105,6 +115,7 @@ function createListItem(item){
 function removeItem(e){
     const li=e.target.parentElement;
     shoppingList.removeChild(li);
+    saveToLS()
 }
 
 function openEditMode(e){
@@ -116,6 +127,7 @@ function openEditMode(e){
 
 function closeEditMode(e){
     e.target.contentEditable=false;
+    saveToLS()
 }
 
 function cancelEnter(e){
